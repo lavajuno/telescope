@@ -159,3 +159,6 @@ class Stats:
         if smart_devices:
             result["smart"] = Stats.smart(smart_devices)
         return result
+
+if __name__ == "__main__":
+    print(json.dumps(Stats.all(), indent=4))

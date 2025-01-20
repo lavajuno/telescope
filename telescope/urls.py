@@ -15,9 +15,38 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 
-from django.contrib import admin
-from django.urls import path
+from django.urls import include, path
+
+from telescope.views import APIViews
 
 urlpatterns = [
-    path("admin/", admin.site.urls),
+    path(
+        "api/",
+        include(
+            [
+                path(
+                    "",
+                    APIViews.index,
+                    name="api.index"
+                ),
+                path(
+                    "agent/",
+                    include(
+                        [
+                            path(
+                                "register/",
+                                APIViews.agent_register,
+                                "api.ingress",
+                            ),
+                            path(
+                                "data/",
+                                APIViews.agent_data,
+                                "api.ingress",
+                            )
+                        ]
+                    )
+                )
+            ]
+        )
+    ),
 ]
