@@ -1,10 +1,12 @@
 import zmq
+import requests
 import base64
 import json
+import os
 from time import sleep
 import logging
 
-from telescope import Stats
+from telescope_agent import Stats
 
 INTERVAL_S = 60
 ZMQ_CTX = zmq.Context()
@@ -26,7 +28,8 @@ class Config:
     def _setup(self):
         with open(CONFIG_PATH, "rb") as f:
             config: dict = json.loads(f.read())
-            # self.host = config.get("host")
+            self.server_url: list[str] = config["server_url"]
+            self.smart_devices: list[str] = config["smart_devices"]
     
     def __new__(cls):
         if cls._instance is None:
@@ -40,8 +43,8 @@ class Publisher:
     _instance = None
 
     def _setup(self):
-        self.__socket = ZMQ_CTX.socket(zmq.PUB)
-        # TODO connect
+        config = Config()
+        self.__server_url = config.server_url
 
     def __new__(cls):
         if cls._instance is None:
@@ -49,21 +52,48 @@ class Publisher:
             cls._instance._setup()
         return cls._instance
 
-    def publish_stats(self, stats: dict, crypto: Crypto):
-        stats_b64 = base64.b64encode(json.dumps(stats).encode("utf-8"))
-        print(stats_b64)
-        print(base64.b64decode(stats_b64).decode("utf-8"))
-        # TODO encode, sign, and publish stats
-        pass
+    @staticmethod
+    def __post_json(url: str, post_json: dict, timeout: int = 10) -> dict | None:
+        _logger.debug("POST %s", url)
+        try:
+            response = requests.post(url, timeout=timeout, json=post_json)
+            if response.status_code != 200:
+                _logger.error(
+                    "POST %s failed with status %s.", url, response.status_code
+                )
+                _logger.debug("Response body:\n%s", response.content.decode())
+                return None
+            return response.json()
+        except Exception as e:
+            _logger.error(
+                "GET %s failed with unknown error:\n%s", url, repr(e)
+            )
+            return None
+
+    def publish_stats(self, stats: dict):
+        self.__post_json(
+            self.__server_url,
+            {
+                "version": "0",
+                "agent_id": "",
+                "agent_secret": "",
+                "body": stats,
+            }
+        )
 
 def main() -> int:
     # TODO set up socket
 
-    # TODO read config file for smart devices
-    smart_devices = []
+    config = Config()
+    publisher = Publisher()
 
-    # while True:
-    #     sleep(INTERVAL_S)
+    # TODO read config file for smart devices
+    smart_devices = config.smart_devices
+
+    while True:
+        stats = Stats.all(smart_devices=smart_devices)
+        publisher.publish_stats(stats)
+        sleep(INTERVAL_S)
 
 if __name__ == "__main__":
     try:
