@@ -3,6 +3,8 @@ from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.views.decorators.cache import cache_page
 from django.views.decorators.http import require_GET, require_POST, require_http_methods
+import json
+from http import HTTPStatus
 
 class APIViews:
     def index(request: HttpRequest):
@@ -14,6 +16,9 @@ class APIViews:
 
     @require_http_methods(["GET", "POST"])
     def agent_register(request: HttpRequest):
+        if len(request.body) > 1024:
+            return JsonResponse({}, status=HTTPStatus.REQUEST_ENTITY_TOO_LARGE)
+        request_json = json.loads(request.body)
         pass
 
     @require_POST

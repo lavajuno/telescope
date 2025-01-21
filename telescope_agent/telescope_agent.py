@@ -5,12 +5,14 @@ import json
 import os
 from time import sleep
 import logging
+import secrets
 
 from telescope_agent import Stats
 
 INTERVAL_S = 60
 ZMQ_CTX = zmq.Context()
 CONFIG_PATH = "config.json"
+STATE_PATH = ".state.json"
 
 _logger = logging.getLogger()
 _logger.setLevel(logging.DEBUG)
@@ -36,7 +38,37 @@ class Config:
             cls._instance = super(Config, cls).__new__(cls)
             cls._instance._setup()
         return cls._instance
+    
+class State:
+    _instance = None
 
+    def load(self):
+        with open(STATE_PATH, "rb") as f:
+            config: dict = json.loads(f.read())
+        self.agent_id: str = config["agent_id"]
+        self.agent_secret: str = config["agent_secret"]
+
+    def save(self):
+        data = {
+            "agent_id": self.agent_id,
+            "agent_secret": self.agent_secret,
+        }
+        with open(STATE_PATH, "w") as f:
+            f.write(json.dumps(data, indent=4))
+
+    def _setup(self):
+        if os.path.exists(STATE_PATH):
+            self.load()
+        else:
+            self.agent_id = secrets.token_hex(16)
+            self.agent_secret = secrets.token_hex(32)
+            self.save()
+    
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super(Config, cls).__new__(cls)
+            cls._instance._setup()
+        return cls._instance
 
 
 class Publisher:
