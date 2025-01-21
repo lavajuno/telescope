@@ -14,7 +14,19 @@ class System(models.Model):
             models.Index(fields=["agent_id"]),
             models.Index(fields=["name"]),
         ]
-    
+
+class SystemRegistration(models.Model):
+    """
+    """
+
+    agent_id = models.CharField(max_length=32)
+    agent_secret = models.CharField(max_length=64)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=["agent_id"]),
+        ]
+
 class Snapshot(models.Model):
     """
     """
@@ -26,3 +38,10 @@ class Snapshot(models.Model):
     timestamp = models.DateTimeField(default=timezone.now)
 
     body = models.JSONField(default=dict)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=["timestamp"]),
+            models.Index(fields=["system", "timestamp"]),
+        ]
+
