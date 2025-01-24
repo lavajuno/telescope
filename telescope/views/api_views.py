@@ -18,7 +18,6 @@ class APIViews:
     def agent_register(request: HttpRequest):
         if len(request.body) > 1024:
             return JsonResponse({}, status=HTTPStatus.REQUEST_ENTITY_TOO_LARGE)
-        request_json = json.loads(request.body)
         pass
 
     @require_POST
