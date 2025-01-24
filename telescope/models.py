@@ -126,3 +126,20 @@ class Fan(models.Model):
         indexes = [
             models.Index(fields=["snapshot", "group", "name"]),
         ]
+
+class ZFSPool(models.Model):
+    snapshot = models.ForeignKey(
+        Snapshot, on_delete=models.CASCADE, related_name="fans",
+    )
+
+    name = models.CharField(max_length=128)
+
+    size = models.CharField(max_length=32)
+
+    allocated = models.CharField(max_length=32)
+
+    free = models.CharField(max_length=32)
+
+    usage = models.DecimalField(max_digits=4, decimal_places=3)
+
+    health = models.CharField(max_length=32)
