@@ -36,12 +36,12 @@ urlpatterns = [
                             path(
                                 "register/",
                                 APIViews.agent_register,
-                                "api.ingress",
+                                name="api.ingress",
                             ),
                             path(
                                 "data/",
                                 APIViews.agent_data,
-                                "api.ingress",
+                                name="api.ingress",
                             )
                         ]
                     )

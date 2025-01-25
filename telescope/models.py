@@ -129,7 +129,7 @@ class Fan(models.Model):
 
 class ZFSPool(models.Model):
     snapshot = models.ForeignKey(
-        Snapshot, on_delete=models.CASCADE, related_name="fans",
+        Snapshot, on_delete=models.CASCADE, related_name="zfs_pools",
     )
 
     name = models.CharField(max_length=128)

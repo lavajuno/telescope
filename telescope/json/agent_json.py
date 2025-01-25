@@ -32,6 +32,8 @@ class Storage(JSONObject):
     def __init__(self):
         super().__init__()
 
+        self._fields["device"] = StringField(min_length=1, max_length=64)
+
         self._fields["total_kb"] = IntField(min_value=0)
 
         self._fields["free_kb"] = IntField(min_value=0)

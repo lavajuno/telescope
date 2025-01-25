@@ -357,6 +357,24 @@ class JSONObject:
         if self._valid is None:
             self.__validate()
         return self._errors
+    
+class ObjectValidator(Validator):
+    def __init__(self, *, cls: Type[JSONObject]):
+        super().__init__()
+        self.__cls = cls
+
+    def validate(self, value) -> tuple[bool, list[str]]:
+        valid, errors = super().validate(value)
+        try:
+            obj = self.__cls()
+            obj.load(value)
+            if not obj.valid():
+                valid = False
+                errors.append(str(obj.errors()))
+        except:
+            valid = False
+            errors.append("Value cannot be converted to an object.")
+        return valid, errors
 
 class ObjectTransformer(Transformer):
     def __init__(self, *, cls: Type[JSONObject]):
@@ -376,7 +394,9 @@ class ObjectField(Field):
         **kwargs,
     ):
         super().__init__(**kwargs)
+        self._validators.append(ObjectValidator(cls=cls))
         self._transformers.append(ObjectTransformer(cls=cls))
+
 
 
 # class TestObject2(JSONObject):
