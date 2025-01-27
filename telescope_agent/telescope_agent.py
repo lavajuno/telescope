@@ -9,10 +9,13 @@ import secrets
 
 from telescope_agent import Stats
 
+
+API_VERSION = "0.0.0"
+API_DATA_PATH = "/api/agent/data/"
 INTERVAL_S = 60
 CONFIG_PATH = "config.json"
 STATE_PATH = ".state.json"
-API_VERSION = "0.0.0"
+
 
 _logger = logging.getLogger()
 _logger.setLevel(logging.DEBUG)
@@ -30,7 +33,7 @@ class Config:
     def _setup(self):
         with open(CONFIG_PATH, "rb") as f:
             config: dict = json.loads(f.read())
-            self.server_url: list[str] = config["server_url"]
+            self.server_url: str = Config.__normalize_url(config["server_url"])
             self.smart_devices: list[str] = config["smart_devices"]
     
     def __new__(cls):
@@ -38,6 +41,10 @@ class Config:
             cls._instance = super(Config, cls).__new__(cls)
             cls._instance._setup()
         return cls._instance
+    
+    @staticmethod
+    def __normalize_url(url: str) -> str:
+        return url.rstrip("/")
     
 class State:
     _instance = None
@@ -76,7 +83,7 @@ class Publisher:
 
     def _setup(self):
         config = Config()
-        self.__server_url = config.server_url
+        self.__api_data_url = "{}{}".format(config.server_url, API_DATA_PATH)
 
     def __new__(cls):
         if cls._instance is None:
@@ -105,7 +112,7 @@ class Publisher:
     def publish_stats(self, stats: dict):
         state = State()
         self.__post_json(
-            self.__server_url,
+            self.__api_data_url,
             {
                 "version": API_VERSION,
                 "agent_id": state.agent_id,

@@ -37,13 +37,13 @@ class Snapshot(models.Model):
 
     timestamp = models.DateTimeField(default=timezone.now)
 
-    memory_total_kb = models.IntegerField()
+    memory_total_kb = models.IntegerField(null=True)
 
-    memory_free_kb = models.IntegerField()
+    memory_free_kb = models.IntegerField(null=True)
 
-    memory_used_kb = models.IntegerField()
+    memory_used_kb = models.IntegerField(null=True)
 
-    memory_avail_kb = models.IntegerField()
+    memory_avail_kb = models.IntegerField(null=True)
 
     battery_charge = models.DecimalField(max_digits=4, decimal_places=3, null=True)
 
@@ -55,24 +55,23 @@ class Snapshot(models.Model):
             models.Index(fields=["system", "timestamp"]),
         ]
 
-    @staticmethod
-    def create_from_json(system: System, data: dict):
-        
-        s = Snapshot.objects.create(system=system)
-        s.__load_cpu(data["cpu"])
-        s.__load_memory(data["memory"])
-        s.__load_storage(data["storage"])
-        s.__load_temps(data["temps"])
-        s.__load_fans(data["fans"])
-        s.__load_battery(data["battery"])
-
-        s.save()
+    def load_json(self, data: dict):
+        body: dict = data["body"]
+        self.__load_cpu(body["cpu"])
+        self.__load_memory(body["memory"])
+        self.__load_storage(body["storage"])
+        self.__load_temps(body["temps"])
+        self.__load_fans(body["fans"])
+        self.__load_battery(body["battery"])
+        self.save()
 
     def __load_cpu(self, data: dict):
         for i in range(data["count"]):
             c = CPUCore(snapshot=self)
+            c.number = i
             c.freq_mhz = data["freq_mhz"][i]
             c.usage = data["usage"][i]
+            c.save()
 
     def __load_memory(self, data: dict):
         self.memory_total_kb = data["total_kb"]
@@ -81,19 +80,36 @@ class Snapshot(models.Model):
         self.memory_avail_kb = data["available_kb"]
 
     def __load_storage(self, data: dict):
-        pass
+        for mountpoint, params in data.items():
+            s = Storage(snapshot=self)
+            s.mountpoint = mountpoint
+            s.total_kb = params["total_kb"]
+            s.free_kb = params["free_kb"]
+            s.used_kb = params["used_kb"]
+            s.utilization = params["utilization"]
+            s.save()
 
     def __load_temps(self, data: dict):
-        pass
+        for group, sensors in data.items():
+            for sensor in sensors:
+                t = Temperature(snapshot=self)
+                t.group = group
+                t.name = sensor["name"]
+                t.temp_c = sensor["temp_c"]
+                t.save()
     
     def __load_fans(self, data: dict):
-        pass
+        for group, fans in data.items():
+            for fan in fans:
+                f = Fan(snapshot=self)
+                f.group = group
+                f.name = fan["name"]
+                f.rpm = fan["rpm"]
+                f.save()
 
     def __load_battery(self, data: dict):
-        pass
-
-    
-
+        self.battery_charge = data["charge"]
+        self.battery_standby = data["standby"]
 
 class CPUCore(models.Model):
     snapshot = models.ForeignKey(
