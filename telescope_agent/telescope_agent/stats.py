@@ -27,16 +27,6 @@ class Stats:
         return device_valid and mountpoint_valid
     
     @staticmethod
-    def __storage_usage(path):
-        disk = psutil.disk_usage(path)
-        return {
-            "total_kb": disk.total // 1024,
-            "used_kb": disk.used // 1024,
-            "free_kb": disk.free // 1024,
-            "utilization": disk.percent / 100,
-        }
-    
-    @staticmethod
     def __storage_smart(device: str):
         result = subprocess.run(
             [
@@ -86,10 +76,14 @@ class Stats:
         storage = {}
         for p in partitions_raw:
             if Stats.__is_valid_storage(p.device, p.mountpoint):
+                disk = psutil.disk_usage(p.mountpoint)
                 storage[p.mountpoint] = {
                     "device": p.device,
                     "filesystem": p.fstype,
-                    "usage": Stats.__storage_usage(p.mountpoint),
+                    "total_kb": disk.total // 1024,
+                    "used_kb": disk.used // 1024,
+                    "free_kb": disk.free // 1024,
+                    "utilization": disk.percent / 100,
                 }
         return storage
     

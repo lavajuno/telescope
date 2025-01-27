@@ -28,9 +28,13 @@ class APIViews:
     @csrf_exempt
     def agent_data(request: HttpRequest):
         # try:
-        agent_data = AgentDataBody()
+        agent_data = AgentData()
         agent_data.load(json.loads(request.body))
+        print(request.body)
         print(agent_data.errors())
+        if not agent_data.valid():
+            return JsonResponse(agent_data.errors(), status=HTTPStatus.BAD_REQUEST)
+        print(agent_data.value())
         # except:
         #     return JsonResponse({}, status=HTTPStatus.BAD_REQUEST)
         

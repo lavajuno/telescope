@@ -59,9 +59,9 @@ class Fan(JSONObject):
 class Battery(JSONObject):
     def __init__(self):
         super().__init__()
-        self._fields["charge"] = FloatField(min_value=0)
+        self._fields["charge"] = FloatField(min_value=0, null=True)
 
-        self._fields["standby"] = BooleanField()
+        self._fields["standby"] = BooleanField(null=True)
 
 class AgentDataBody(JSONObject):
     def __init__(self):
@@ -95,6 +95,10 @@ class AgentDataBody(JSONObject):
             )
         )
 
+        self._fields["battery"] = ObjectField(
+            cls=Battery,
+        )
+
 
 class AgentData(JSONObject):
     def __init__(self):
@@ -105,13 +109,13 @@ class AgentData(JSONObject):
         )
         
         self._fields["agent_id"] = StringField(
-            min_length=16,
-            max_length=16,
+            min_length=32,
+            max_length=32,
         )
 
         self._fields["agent_secret"] = StringField(
-            min_length=32,
-            max_length=32,
+            min_length=64,
+            max_length=64,
         )
 
         self._fields["body"] = ObjectField(

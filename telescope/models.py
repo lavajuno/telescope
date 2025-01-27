@@ -55,6 +55,46 @@ class Snapshot(models.Model):
             models.Index(fields=["system", "timestamp"]),
         ]
 
+    @staticmethod
+    def create_from_json(system: System, data: dict):
+        
+        s = Snapshot.objects.create(system=system)
+        s.__load_cpu(data["cpu"])
+        s.__load_memory(data["memory"])
+        s.__load_storage(data["storage"])
+        s.__load_temps(data["temps"])
+        s.__load_fans(data["fans"])
+        s.__load_battery(data["battery"])
+
+        s.save()
+
+    def __load_cpu(self, data: dict):
+        for i in range(data["count"]):
+            c = CPUCore(snapshot=self)
+            c.freq_mhz = data["freq_mhz"][i]
+            c.usage = data["usage"][i]
+
+    def __load_memory(self, data: dict):
+        self.memory_total_kb = data["total_kb"]
+        self.memory_free_kb = data["free_kb"]
+        self.memory_used_kb = data["used_kb"]
+        self.memory_avail_kb = data["available_kb"]
+
+    def __load_storage(self, data: dict):
+        pass
+
+    def __load_temps(self, data: dict):
+        pass
+    
+    def __load_fans(self, data: dict):
+        pass
+
+    def __load_battery(self, data: dict):
+        pass
+
+    
+
+
 class CPUCore(models.Model):
     snapshot = models.ForeignKey(
         Snapshot, on_delete=models.CASCADE, related_name="cpu_cores",

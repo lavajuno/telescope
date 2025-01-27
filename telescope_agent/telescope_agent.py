@@ -1,4 +1,4 @@
-import zmq
+
 import requests
 import base64
 import json
@@ -10,9 +10,9 @@ import secrets
 from telescope_agent import Stats
 
 INTERVAL_S = 60
-ZMQ_CTX = zmq.Context()
 CONFIG_PATH = "config.json"
 STATE_PATH = ".state.json"
+API_VERSION = "0.0.0"
 
 _logger = logging.getLogger()
 _logger.setLevel(logging.DEBUG)
@@ -66,7 +66,7 @@ class State:
     
     def __new__(cls):
         if cls._instance is None:
-            cls._instance = super(Config, cls).__new__(cls)
+            cls._instance = super(State, cls).__new__(cls)
             cls._instance._setup()
         return cls._instance
 
@@ -98,17 +98,18 @@ class Publisher:
             return response.json()
         except Exception as e:
             _logger.error(
-                "GET %s failed with unknown error:\n%s", url, repr(e)
+                "POST %s failed with unknown error:\n%s", url, repr(e)
             )
             return None
 
     def publish_stats(self, stats: dict):
+        state = State()
         self.__post_json(
             self.__server_url,
             {
-                "version": "0",
-                "agent_id": "",
-                "agent_secret": "",
+                "version": API_VERSION,
+                "agent_id": state.agent_id,
+                "agent_secret": state.agent_secret,
                 "body": stats,
             }
         )
