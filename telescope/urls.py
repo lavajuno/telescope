@@ -18,6 +18,7 @@ Including another URLconf
 from django.urls import include, path
 
 from telescope.views import APIViews
+from telescope.views import SystemViews
 
 urlpatterns = [
     path(
@@ -34,11 +35,6 @@ urlpatterns = [
                     include(
                         [
                             path(
-                                "register/",
-                                APIViews.agent_register,
-                                name="api.ingress",
-                            ),
-                            path(
                                 "data/",
                                 APIViews.agent_data,
                                 name="api.ingress",
@@ -49,4 +45,32 @@ urlpatterns = [
             ]
         )
     ),
+    path(
+        "system/",
+        include(
+            [
+                path(
+                    "",
+                    SystemViews.index,
+                    name="system.index",
+                ),
+                path(
+                    "<int:system_id>/",
+                    SystemViews.view,
+                    name="system.view",
+                ),
+                path(
+                    "<int:system_id>/edit/",
+                    SystemViews.edit,
+                    name="system.edit",
+                ),
+                path(
+                    "<int:system_id>/delete/",
+                    SystemViews.delete,
+                    name="system.delete",
+                ),
+            ]
+        )
+    ),
+
 ]

@@ -1,15 +1,15 @@
-from django.conf import settings
-from django.http import HttpRequest, HttpResponse, JsonResponse
-from django.shortcuts import get_object_or_404, redirect
-from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.cache import cache_page
-from django.views.decorators.http import require_GET, require_POST, require_http_methods
-import json
 from http import HTTPStatus
+import json
+import logging
 
-from telescope.json.agent_json import AgentData, AgentDataBody
+from django.http import HttpRequest, JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
+
+from telescope.json.agent_json import AgentData
 from telescope.models import Snapshot, System
 
+_logger = logging.getLogger("telescope")
 
 class APIViews:
     def index(request: HttpRequest):
@@ -19,29 +19,26 @@ class APIViews:
             }
         )
 
-    @require_http_methods(["GET", "POST"])
-    def agent_register(request: HttpRequest):
-        if len(request.body) > 1024:
-            return JsonResponse({}, status=HTTPStatus.REQUEST_ENTITY_TOO_LARGE)
-        pass
-
     @require_POST
     @csrf_exempt
     def agent_data(request: HttpRequest):
-        # try:
-        agent_data = AgentData()
-        agent_data.load(json.loads(request.body))
-        print(request.body)
-        print(agent_data.errors())
-        if not agent_data.valid():
-            return JsonResponse(agent_data.errors(), status=HTTPStatus.BAD_REQUEST)
-        print(agent_data.value())
-        system = System.objects.first()
-        if system is None:
-            system = System.objects.create(name="a", agent_id="a", agent_secret="a")
+        try:
+            request_json = AgentData()
+            request_json.load(json.loads(request.body))
+        except Exception as e:
+            _logger.debug("Exception: %s", str(e))
+            return JsonResponse({}, status=HTTPStatus.BAD_REQUEST)
+        if not request_json.valid():
+            return JsonResponse(request_json.errors(), status=HTTPStatus.BAD_REQUEST)
+        system = __get_system(request_json["agent_id"], request_json["agent_secret"])
+        if not system:
+            return JsonResponse({}, status=HTTPStatus.FORBIDDEN)
         s = Snapshot.objects.create(system=system)
-        s.load_json(agent_data.value())
-        # except:
-        #     return JsonResponse({}, status=HTTPStatus.BAD_REQUEST)
-        
-        return JsonResponse(agent_data.value())
+        s.load_json(request_json.value())
+        return JsonResponse({}, status=HTTPStatus.OK)
+
+def __get_system(agent_id: str, agent_secret: str) -> System:
+    s = System.objects.filter(id=agent_id).first()
+    if s and s.agent_secret == agent_secret:
+        return s
+    return None
