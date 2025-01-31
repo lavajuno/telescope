@@ -55,6 +55,11 @@ urlpatterns = [
                     name="system.index",
                 ),
                 path(
+                    "add/",
+                    SystemViews.add,
+                    name="system.add",
+                ),
+                path(
                     "<int:system_id>/",
                     SystemViews.view,
                     name="system.view",

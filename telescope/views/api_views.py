@@ -23,22 +23,23 @@ class APIViews:
     @csrf_exempt
     def agent_data(request: HttpRequest):
         try:
-            request_json = AgentData()
-            request_json.load(json.loads(request.body))
+            request_json_raw = AgentData()
+            request_json_raw.load(json.loads(request.body))
         except Exception as e:
             _logger.debug("Exception: %s", str(e))
             return JsonResponse({}, status=HTTPStatus.BAD_REQUEST)
-        if not request_json.valid():
-            return JsonResponse(request_json.errors(), status=HTTPStatus.BAD_REQUEST)
-        system = __get_system(request_json["agent_id"], request_json["agent_secret"])
+        if not request_json_raw.valid():
+            return JsonResponse(request_json_raw.errors(), status=HTTPStatus.BAD_REQUEST)
+        request_json = request_json_raw.value()
+        system = _get_system(request_json["agent_id"], request_json["agent_secret"])
         if not system:
             return JsonResponse({}, status=HTTPStatus.FORBIDDEN)
         s = Snapshot.objects.create(system=system)
-        s.load_json(request_json.value())
+        s.load_json(request_json)
         return JsonResponse({}, status=HTTPStatus.OK)
 
-def __get_system(agent_id: str, agent_secret: str) -> System:
-    s = System.objects.filter(id=agent_id).first()
+def _get_system(agent_id: str, agent_secret: str) -> System:
+    s = System.objects.filter(agent_id=agent_id).first()
     if s and s.agent_secret == agent_secret:
         return s
     return None

@@ -1,0 +1,64 @@
+{% extends "../base.html" %}
+{% load static %}
+
+{% block title %} Add a System {% endblock %}
+
+{% block body %}
+<header class="banner">
+    <h1>Add a System</h1>
+</header>
+
+<main>
+    <form action="{% url 'system.add' %}" method="post">
+        {% csrf_token %}
+        
+        <p>
+            <label for="nickname">Nickname:</label><br>
+            <input
+                id="nickname"
+                name="nickname"
+                type="text"
+                minlength="1"
+                maxlength="32"
+                placeholder="..."
+                size="32"
+                required
+            />
+        </p>
+
+        <p>
+            <label for="agent_id">Agent ID:</label><br>
+            <input
+                id="agent_id"
+                name="agent_id"
+                type="text"
+                minlength="32"
+                maxlength="32"
+                size="32"
+                placeholder="..."
+                required
+            />
+        </p>
+
+        <p>
+            <label for="agent_secret">Agent secret:</label><br>
+            <input
+                id="agent_secret"
+                name="agent_secret"
+                type="text"
+                minlength="64"
+                maxlength="64"
+                size="64"
+                placeholder="..."
+                required
+            />
+        </p>
+
+        <button type="submit">
+            + Add
+        </button>
+    </form>
+    
+</main>
+
+{% endblock body %}

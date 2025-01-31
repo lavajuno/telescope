@@ -9,7 +9,18 @@
 </header>
 
 <main>
-    
+    <div class="button_bar">
+        <a class="btn primary" href="{% url 'system.add' %}">
+            Add System
+        </a>
+    </div>
+
+    {% for system in systems %}
+    <div class="system">
+        <h2>{{ system.name }}</h2>
+
+    </div>
+    {% endfor %}
 </main>
 
 {% endblock body %}

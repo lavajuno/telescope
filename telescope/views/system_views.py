@@ -17,11 +17,24 @@ class SystemViews:
         }
         return render(request, "telescope/system/index.html", context)
 
+    @require_http_methods(["GET", "POST"])
+    def add(request: HttpRequest):
+        match request.method:
+            case "GET":
+                return render(request, "telescope/system/add.html")
+            case "POST":
+                System.objects.create(
+                    name=request.POST.get("nickname"),
+                    agent_id=request.POST.get("agent_id"),
+                    agent_secret=request.POST.get("agent_secret"),
+                )
+                raise NotImplementedError
+
     @require_GET
     def view(request: HttpRequest, system_id: int):
         system = System.objects.filter(id=system_id).prefetch_related("snapshots").first()
         if not system:
-            raise NotImplementedError()
+            raise NotImplementedError
         context = {
             "system": system,
         }
@@ -31,7 +44,7 @@ class SystemViews:
     def edit(request: HttpRequest, system_id: int):
         system = System.objects.filter(id=system_id).prefetch_related("snapshots").first()
         if not system:
-            raise NotImplementedError()
+            raise NotImplementedError
         match request.method:
             case "GET":
                 context = {
