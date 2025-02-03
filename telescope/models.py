@@ -37,6 +37,12 @@ class Snapshot(models.Model):
 
     timestamp = models.DateTimeField(default=timezone.now)
 
+    load_short = models.DecimalField(max_digits=4, decimal_places=3)
+
+    load_med = models.DecimalField(max_digits=4, decimal_places=3)
+
+    load_long = models.DecimalField(max_digits=4, decimal_places=3)
+
     memory_total_kb = models.IntegerField(null=True)
 
     memory_free_kb = models.IntegerField(null=True)
@@ -57,6 +63,7 @@ class Snapshot(models.Model):
 
     def load_json(self, data: dict):
         body: dict = data["body"]
+        self.__load_loadavgs(body["load"])
         self.__load_cpu(body["cpu"])
         self.__load_memory(body["memory"])
         self.__load_storage(body["storage"])
@@ -64,6 +71,11 @@ class Snapshot(models.Model):
         self.__load_fans(body["fans"])
         self.__load_battery(body["battery"])
         self.save()
+
+    def __load_loadavgs(self, data: list):
+        self.load_short = data[0]
+        self.load_med = data[1]
+        self.load_long = data[2]
 
     def __load_cpu(self, data: dict):
         for i in range(data["count"]):

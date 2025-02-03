@@ -16,9 +16,18 @@
     </div>
 
     {% for system in systems %}
-    <div class="system">
+    <div class="system" style="border: 1px solid black;">
         <h2>{{ system.name }}</h2>
 
+        <i>{{ system.agent_id }}</i>
+
+        <a class="btn primary" href="{% url 'system.view' system.id %}">
+            View
+        </a>
+
+        <a class="btn primary" href="{% url 'system.edit' system.id %}">
+            Edit
+        </a>
     </div>
     {% endfor %}
 </main>
