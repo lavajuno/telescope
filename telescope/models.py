@@ -37,11 +37,11 @@ class Snapshot(models.Model):
 
     timestamp = models.DateTimeField(default=timezone.now)
 
-    load_short = models.DecimalField(max_digits=4, decimal_places=3)
+    load_short = models.DecimalField(max_digits=4, decimal_places=3, null=True)
 
-    load_med = models.DecimalField(max_digits=4, decimal_places=3)
+    load_med = models.DecimalField(max_digits=4, decimal_places=3, null=True)
 
-    load_long = models.DecimalField(max_digits=4, decimal_places=3)
+    load_long = models.DecimalField(max_digits=4, decimal_places=3, null=True)
 
     memory_total_kb = models.IntegerField(null=True)
 

@@ -9,6 +9,40 @@
 </header>
 
 <main>
+
+<a class="btn primary" href="{% url 'system.edit' system.id %}">
+    Edit
+</a>
+
+<a class="btn primary" href="{% url 'system.delete' system.id %}">
+    Delete
+</a>
+
+{% if snapshot %}
+<div class="snapshot">
+    <h2>Latest Report</h2>
+
+    <div class="cpu">
+        <h3>CPU</h3>
+        {% for core in snapshot.cpu_cores.all %}
+        <p>
+            Core {{ core.number }}: {{ core.usage }} @ {{ core.freq_mhz}} MHz
+        </p>
+            
+        {% endfor %}
+    </div>
+
+    <div class="memory">
+        <h3>Memory</h3>
+
+        <p>Total (kB): {{ snapshot.memory_total_kb }}</p>
+        <p>Free (kB): {{ snapshot.memory_free_kb }}</p>
+        <p>Used (kB): {{ snapshot.memory_used_kb }}</p>
+        <p>Available (kB): {{ snapshot.memory_avail_kb }}</p>
+        
+    </div>
+</div>
+{% endif %}
     
 </main>
 

@@ -1,14 +1,19 @@
 {% extends "../base.html" %}
 {% load static %}
 
-{% block title %} Delete system {{ system.id }} {% endblock %}
+{% block title %} Delete system {{ system.name }} {% endblock %}
 
 {% block body %}
 <header class="banner">
-    <h1>Telescope</h1>
+    <h1>Delete system {{ system.name }}</h1>
 </header>
 
 <main>
+    <form action="{% url 'system.delete' system.id %}" method="post">
+        {% csrf_token %}
+
+        <button type="submit">Delete</button>
+    </form>
     
 </main>
 
