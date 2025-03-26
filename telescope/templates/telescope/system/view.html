@@ -22,6 +22,9 @@
 <div class="snapshot">
     <h2>Latest Report</h2>
 
+    <hr>
+    <br>
+
     <div class="cpu">
         <h3>CPU</h3>
         {% for core in snapshot.cpu_cores.all %}
@@ -32,6 +35,9 @@
         {% endfor %}
     </div>
 
+    <hr>
+    <br>
+
     <div class="memory">
         <h3>Memory</h3>
 
@@ -41,6 +47,45 @@
         <p>Available (kB): {{ snapshot.memory_avail_kb }}</p>
         
     </div>
+
+    <hr>
+    <br>
+
+    <div class="storage">
+        <h3>Storage</h3>
+        {% for storage in snapshot.storages.all %}
+            <h4>{{ storage.mountpoint }}</h4>
+            <p>Total (kB): {{ storage.total_kb }}</p>
+            <p>Free (kB): {{ storage.free_kb }}</p>
+            <p>Used (kB): {{ storage.used_kb }}</p>
+            <p>Utilization: {{ storage.utilization }}</p>
+        {% endfor %}
+    </div>
+
+    <hr>
+    <br>
+
+    <div class="temperature">
+        <h3>Sensors</h3>
+        {% for sensor in snapshot.temps.all %}
+            <h4>{{ sensor.group }}: {{ sensor.name }}</h4>
+            <p>Temp. (&deg;C): {{ sensor.temp_c }}</p>
+        {% endfor %}
+    </div>
+
+    <hr>
+    <br>
+
+    <div class="fan">
+        <h3>Fans</h3>
+        {% for fan in snapshot.fans.all %}
+            <h4>{{ fan.group }}: {{ fan.name }}</h4>
+            <p>Speed (RPM): {{ fan.rpm }}</p>
+        {% endfor %}
+    </div>
+
+    <hr>
+    <br>
 </div>
 {% endif %}
     
